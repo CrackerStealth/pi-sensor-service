@@ -1,0 +1,16 @@
+.sensortable {
+    border: 1px solid black;
+    width: 800px;
+}
+
+.rootparam {
+    font-size: 18px;
+}
+
+.labelname {
+    font-weight: bold;
+}
+
+.sensortable td, .sensortable tr, .sensortable th {
+    border: 1px solid black;
+}

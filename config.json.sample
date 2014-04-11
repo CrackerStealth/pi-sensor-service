@@ -1,0 +1,8 @@
+{"listen_port" : 8443,
+ "ssl_key" : "/etc/ssl/private/localhost.key",
+ "ssl_cert" : "/etc/ssl/localcerts/localhost.crt",
+ "sensors" : { "SensorName" : {"sensor" : "temperature",
+                               "type" : 1,
+                               "location" : "28-############",
+                               "unit" : "C",
+                               "enabled" : 1}}}

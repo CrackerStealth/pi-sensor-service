@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ### BEGIN INIT INFO
 # Provides:        pisensorserviced
@@ -34,6 +34,15 @@ stop() {
         rm -f $LOCKFILE
         echo
 }
+# Status of the service
+status () {
+        PI_SENSOR_SERVICE_PID=`ps aux | grep "python $PI_SENSOR_SERVICE_PATH/service.py" | grep -v "grep" | awk '{ print $2 }'`
+        if [ ! -z "$PI_SENSOR_SERVICE_PID" ]; then
+            echo "Pi Sensor Service Status: Running"
+        else
+            echo "Pi Sensor Service Status: Stopped"
+        fi
+}
 ### main logic ###
 case "$1" in
   start)
@@ -43,7 +52,7 @@ case "$1" in
         stop
         ;;
   status)
-        status pisensorserviced
+        status
         ;;
   restart|reload|condrestart)
         stop

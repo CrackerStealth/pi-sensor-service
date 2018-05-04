@@ -1,0 +1,12 @@
+[Unit]
+Description=XML formatting sensor access software written in Python for use on the Raspberry Pi t.
+After=multi-user.target
+ 
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/pi-sensor-service
+ExecStart=/usr/bin/python /home/pi/pi-sensor-service/service.py
+Restart=on-abort
+ 
+[Install]
+WantedBy=multi-user.target

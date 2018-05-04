@@ -18,8 +18,6 @@ class TempDS18B20 ():
     
     # Initialize the modules at the OS level to interact with the temperature sensor.
     def __init__ (self, location):
-        subprocess.call(['modprobe', 'w1-gpio'])
-        subprocess.call(['modprobe', 'w1-therm'])
         self.sensor_location = DEVICES_DIR + location + '/w1_slave'
 
     # We read the temperature from the actual device itself in the file/folder structure.

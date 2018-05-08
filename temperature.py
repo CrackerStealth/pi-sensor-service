@@ -1,4 +1,5 @@
 import json
+import syslog
 
 from lxml import etree
 
@@ -22,15 +23,21 @@ class TempDS18B20 ():
     
     # We read the temperature from the actual device itself in the file/folder structure.
     def readValue(self):
-        sensor_file = open(self.sensor_location)
-        sensor_reader = sensor_file.read()
-        sensor_file.close()
+        sensor_value = None
         
-        sensor_line = sensor_reader.split('\n')[1]
-        sensor_data = sensor_line.split(' ')[9]
-        
-        sensor_value =  float(sensor_data[2:])
-        sensor_value = sensor_value / 1000
+        try:
+            sensor_file = open(self.sensor_location)
+            sensor_reader = sensor_file.read()
+            sensor_file.close()
+            
+            sensor_line = sensor_reader.split('\n')[1]
+            sensor_data = sensor_line.split(' ')[9]
+            
+            sensor_value =  float(sensor_data[2:])
+            sensor_value = sensor_value / 1000
+        except Exception as errMsg:
+            syslog.syslog("There was an error reading the state for sensor [" + self.sensor_location+ "]: " + str(errMsg))
+            return None
         
         return sensor_value
     
@@ -80,13 +87,13 @@ class Temperature():
     
     # Return the JSON formatted version of the sensor output.
     def getJSON(self):
-        element = {'name': self.name, 'type': str(self.temp_sensor.getType()), 'type_desc': self.temp_sensor.getTypeDesc(), 'unit': self.temp_sensor.getUnit(), 'value': repr(self.temp_sensor.readValue())}
+        element = {'name': self.name, 'type': str(self.temp_sensor.getType()), 'type_desc': self.temp_sensor.getTypeDesc(), 'unit': self.temp_sensor.getUnit(), 'value': self.temp_sensor.readValue()}
         
         return json.dumps(element)
     
     # Return a raw object version of the sensor output. Useful to convert into JSON object later.
     def getObject(self):
-        element = {'name': self.name, 'type': str(self.temp_sensor.getType()), 'type_desc': self.temp_sensor.getTypeDesc(), 'unit': self.temp_sensor.getUnit(), 'value': repr(self.temp_sensor.readValue())}
+        element = {'name': self.name, 'type': str(self.temp_sensor.getType()), 'type_desc': self.temp_sensor.getTypeDesc(), 'unit': self.temp_sensor.getUnit(), 'value': self.temp_sensor.readValue()}
         
         return element
     

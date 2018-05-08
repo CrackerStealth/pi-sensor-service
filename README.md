@@ -58,3 +58,18 @@ Application Setup:
     sudo systemctl enable pisensorserviced.service
     sudo systemctl start pisensorserviced.service
     ```
+
+Optional Setup:
+-----
+
+1.  **Wi-Fi Auto-Reconnection Script**
+    
+    Occassionally, when using Wi-Fi, a network connection might get dropped causing access to the garage controller to become unavailable. If you are using the Raspberry Pi built in Wi-Fi interface, you can use the included connection script to re-connect when this happens.
+    
+    To use the re-connection script, modify the root crontab:
+    
+    `sudo crontab -e`
+    
+    Add the following line to check every 5 minutes for a proper connection. Replace **192.168.1.1** with the IP address of your router/gateway or another computer to check against.
+    
+    `*/5 * * * * sh /home/pi/pi-sensor-service/extra/check-wifi-connection.sh 192.168.1.1 >/dev/null 2>&1`

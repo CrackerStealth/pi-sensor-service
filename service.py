@@ -26,7 +26,7 @@ class ListHandler(Resource):
     def __init__ (self, sensor_obj):
         Resource.__init__(self)
         self.obj_list = sensor_obj
-
+    
     def render(self, request):
         # Load the XML of the template file
         list_page = etree.parse(TEMPLATE_LIST)
@@ -43,7 +43,7 @@ class ListHandler(Resource):
         list_table_element = list_page.find('.//table[@id="sensortable"]')
         for o in self.obj_list:
             list_table_element.append(o.getHTML())
-            
+        
         # Return rendered HTML to the client
         return etree.tostring(list_page, pretty_print=True)
 
@@ -57,7 +57,7 @@ class ServiceHandler(Resource):
     def __init__ (self, sensor_obj):
         Resource.__init__(self)
         self.obj_list = sensor_obj
-
+    
     def render(self, request):
         # We are returning XML to the client
         request.setHeader('Content-Type', 'application/xml')
@@ -89,13 +89,46 @@ class ServiceHandler(Resource):
         except:
             # Loop through all the sensors to add to the response.
             for o in self.obj_list:
-                sensors_element.append(o.getXML())     
+                sensors_element.append(o.getXML())
         
         # Add the ensors to the response.
         root_item.append(sensors_element)
         
         # Return XML in string form to the client.
         return etree.tostring(root_item, pretty_print=True, xml_declaration=True, encoding='UTF-8')
+
+# This resource handler is used to provide JSON output for the sensor.json
+# resource request. A GET request parameter 'sensor' can get added with
+# the name of the sensor being queries. Otherwise, returns all sensors.
+class ApiHandler(Resource):
+    isLeaf = True
+    obj_list = None
+    
+    def __init__ (self, sensor_obj):
+        Resource.__init__(self)
+        self.obj_list = sensor_obj
+    
+    def render(self, request):
+        # We are returning JSON text to the client
+        request.setHeader('Content-Type', 'application/json')
+        
+        # Build the list of sensors
+        sensor_list = []
+        
+        # Try and read the GET parameter 'sensor'. If it fails, parameter was not supplied.
+        try:
+            # Looking for a sensor by its name
+            sensor_name = request.args['sensor'][0]
+            for o in self.obj_list:
+                if o.name == sensor_name:
+                    sensor_list.append(o.getObject())
+        # Could not read 'sensor' parameter, return all.
+        except:
+            # Loop through all the sensors to add to the response.
+            for o in self.obj_list:
+                sensor_list.append(o.getObject())
+        
+        return json.dumps({'hostname': socket.gethostname(), 'date': str(datetime.datetime.now()), 'sensors': sensor_list})
 
 
 if __name__ == '__main__':
@@ -127,10 +160,11 @@ if __name__ == '__main__':
             sensor_obj.append(Temperature(type, location, unit, name))
         else:
             raise ConfigError('Unknown sensor type: ' + type)
-
+    
     # Create the SITE to be hosted by our service
     root = File('www')
     root.putChild('sensor.xml', ServiceHandler(sensor_obj))
+    root.putChild('sensor.json', ApiHandler(sensor_obj))
     root.putChild('list.html', ListHandler(sensor_obj))
     site = server.Site(root)
     

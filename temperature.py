@@ -1,4 +1,4 @@
-import subprocess
+import json
 
 from lxml import etree
 
@@ -19,7 +19,7 @@ class TempDS18B20 ():
     # Initialize the modules at the OS level to interact with the temperature sensor.
     def __init__ (self, location):
         self.sensor_location = DEVICES_DIR + location + '/w1_slave'
-
+    
     # We read the temperature from the actual device itself in the file/folder structure.
     def readValue(self):
         sensor_file = open(self.sensor_location)
@@ -31,12 +31,13 @@ class TempDS18B20 ():
         
         sensor_value =  float(sensor_data[2:])
         sensor_value = sensor_value / 1000
+        
         return sensor_value
     
     # Return numeric temperature sensor type value.
     def getType(self):
         return TYPE_DS18B20
-
+    
     # Return descriptive temperature sensor type.
     def getTypeDesc(Self):
         return TYPE_DS18B20_DESC
@@ -50,7 +51,7 @@ class Temperature():
     name = None
     unit = None
     temp_sensor = None
-
+    
     # Create an instance of a sensor type based on our initialized parameters
     def __init__ (self, type, location, unit, name):
         self.name = name
@@ -59,11 +60,11 @@ class Temperature():
             self.temp_sensor = TempDS18B20(location)
         else:
             raise ConfigError('Invalid temperature sensor type.')
-
+    
     # Return current sensor value
     def getValue(self):
         return self.temp_sensor.readValue()
-
+    
     # Return the XML formatted version of sensor output.
     def getXML(self):
         element = etree.Element('temperature')
@@ -76,7 +77,19 @@ class Temperature():
         element.text = repr(self.temp_sensor.readValue())
         
         return element
-
+    
+    # Return the JSON formatted version of the sensor output.
+    def getJSON(self):
+        element = {'name': self.name, 'type': str(self.temp_sensor.getType()), 'type_desc': self.temp_sensor.getTypeDesc(), 'unit': self.temp_sensor.getUnit(), 'value': repr(self.temp_sensor.readValue())}
+        
+        return json.dumps(element)
+    
+    # Return a raw object version of the sensor output. Useful to convert into JSON object later.
+    def getObject(self):
+        element = {'name': self.name, 'type': str(self.temp_sensor.getType()), 'type_desc': self.temp_sensor.getTypeDesc(), 'unit': self.temp_sensor.getUnit(), 'value': repr(self.temp_sensor.readValue())}
+        
+        return element
+    
     # Return the HTML formatted version of the sensor output. Table row view to be used in an HTML page with a <table> element.
     def getHTML(self):
         root = etree.Element('tr')
@@ -100,7 +113,7 @@ class Temperature():
         element = etree.Element('td')
         element.text = self.temp_sensor.getTypeDesc()
         root.append(element)
-
+        
         # Add the 'sensor value' HTML column
         element = etree.Element('td')
         element.text = repr(self.temp_sensor.readValue())
